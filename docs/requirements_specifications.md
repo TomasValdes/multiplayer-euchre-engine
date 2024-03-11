@@ -47,7 +47,7 @@ With sub-stories currently being:
 * As a player I want to have my statistics tracked
 * As a player I want to be able to create a private lobby
 
-![Use cases](use-cases.png)
+![Use cases](Images/use-cases.png)
 
 As for acceptance critera, they are as follows:
 * A user must be able to log on or make an account (in all use cases)
@@ -323,7 +323,7 @@ deactivate JavaBackend
 
 ### Architecture Diagram
 
-[Gitlab Link to architecture diagram](./archDiagram.png)
+[Gitlab Link to architecture diagram](Images/archDiagram.png)
 
 [External Link to architecture diagram](https://drive.google.com/file/d/1oqKS26a37G5v7DhYKaEtYxw-6xVGIYjf/view?usp=sharing)
 
@@ -350,3 +350,4 @@ erDiagram
 ```
 
 #### [Lucid Design of Database](https://lucid.app/lucidchart/38c7a343-541e-40ad-a2ea-9f5dfa94c63b/edit?viewport_loc=-932%2C-242%2C1696%2C782%2C0_0&invitationId=inv_97f3b8ff-9664-466a-b975-71f93ab525e1)
+![Lucid diagram](./Images/model_databases.png)
