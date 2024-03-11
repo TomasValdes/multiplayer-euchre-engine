@@ -13,8 +13,22 @@ function App() {
 		// state variable and sets loggedIn to true to communicate that the user is logged in.
 		// This function will be modified once the login endpoint is complete so that it sends a request
 		// to the backend to make sure the user is in the database.
-		setUsername(username);
-		setLoggedIn(isLogged);
+		fetch('http://localhost:8080/login', { //Currently broken due to CORS
+			method: 'POST',
+			headers: {
+			  'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ username }),
+		  })
+		  .then(response => {
+			console.log(response);
+			if (response.ok) {
+			  setUsername(username);
+			  setLoggedIn(isLogged);
+			} else {
+			  throw new Error('Login failed');
+			}
+		  })
 	};
 
 	const handleRegister = (username, isLogged) => {
