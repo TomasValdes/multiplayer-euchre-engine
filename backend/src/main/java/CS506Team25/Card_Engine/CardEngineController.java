@@ -48,33 +48,29 @@ public class CardEngineController {
     /**
      * Login method connecting to the database through @PostMapping("/login")
      * 
-     * Uses a prepared statement to find a user in the database (if they exist) and allow them to login.
+     * Uses a prepared statement to find a user in the database (if they exist) and allow them to login
      * 
-     * @param username                                  Username attempting to login
-     * @return "Logged in"                              Login successful
-     * @return "User does not exist"                    User not found
-     * @return "Error occurred connecting to server."   Error connecting to database
+     * @param username username of player attempting to log in
+     * @return JSON of player's id, username, and date joined. Returns null if not found for login failed
      */
     @PostMapping("/login")
-    public String login(@RequestParam String username) {
+    public ObjectNode login(@RequestParam String username) {
         try (Connection connection = DriverManager.getConnection(url, databaseUsername, password);
              PreparedStatement statement = connection.prepareStatement("SELECT * FROM users WHERE user_name = ?")) {
 
             statement.setString(1, username);
-            // Check if user exists or not
-            // If exists, return "Logged in"
-            // Else, return "User does not exist"
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return "Logged in";
+                    ObjectNode user = getPlayerInfo(Integer.toString(resultSet.getInt(1)));
+                    return user;
                 } else {
-                    return "User does not exist";
+                    return null;
                 }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return "Error occurred connecting to server.";
+            return null;
         }
     }
 
@@ -87,8 +83,6 @@ public class CardEngineController {
      * @param username                                  Username attempting to be registered
      * @return "User already exists"                    Desired username already in use
      * @return "User successfully registered"           Username registered and added to database
-     * @return "Failed to register user"                Error when adding username to database during registration
-     * @return "Error occurred connecting to server."   Error connecting to database
      */
     @PostMapping("/register")
     public String register(@RequestParam String username) {
@@ -145,15 +139,17 @@ public class CardEngineController {
             }
             int rowsInserted = insertStatement.executeUpdate();
             if (rowsInserted > 0) {
-                PreparedStatement selectStatement = connection.prepareStatement("SELECT LAST_INSERT_ID()");
-                ResultSet resultSet = selectStatement.executeQuery();
-                resultSet.next();
-                int gameID = resultSet.getInt(1);
-                GameManager.putLobby(gameID);
-                return Integer.toString(gameID);
-            } else {
-                return "Game could not be created";
+                try (ResultSet resultSet = insertStatement.getGeneratedKeys()){
+                    if (resultSet.next()) {
+                        int gameID = resultSet.getInt(1);
+                        GameManager.putLobby(gameID);
+                        return Integer.toString(gameID);
+                    }
+                }
             }
+
+            return "Game could not be created";
+
         } catch (SQLException e) {
             e.printStackTrace();
             return "Error occurred connecting to server.";
@@ -200,7 +196,6 @@ public class CardEngineController {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 ObjectNode game = objectMapper.createObjectNode();
-
                 int players = 0;
                 for (int x = 3; x < 7; x++){
                     if (resultSet.getInt(x) != 0){
@@ -279,6 +274,28 @@ public class CardEngineController {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Delete player with specified id
+     * @param id player's id
+     * @return id of deleted player, -1 if failed
+     */
+    @DeleteMapping("/player/{id}")
+    public int deletePlayer(@PathVariable String id){
+        try (Connection connection = DriverManager.getConnection(url, databaseUsername, password);
+             PreparedStatement DeleteStatement = connection.prepareStatement("DELETE FROM users WHERE user_id = ?")) {
+
+            DeleteStatement.setInt(1, Integer.parseInt(id));
+            int deletedRows = DeleteStatement.executeUpdate();
+            if (deletedRows > 0){
+                return Integer.parseInt(id);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+        return -1;
     }
 
     private JsonNode userIDToUsername(int userID){
