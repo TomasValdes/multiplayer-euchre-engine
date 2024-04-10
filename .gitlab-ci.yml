@@ -3,6 +3,7 @@ image: node:latest
 stages:
   - build
   - test
+  - docker-build
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
@@ -41,5 +42,16 @@ build-backend:
     paths:
       - backend/build/libs/*.jar
     expire_in: 1 week
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+
+build-docker-images:
+  stage: docker-build
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - docker build ./frontend/. -t euchre-frontend
+    - docker build ./backend/. -t euchre-backend
   rules:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"

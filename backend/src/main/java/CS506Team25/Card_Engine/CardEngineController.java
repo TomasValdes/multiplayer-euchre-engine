@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 @CrossOrigin
 public class CardEngineController {
 
-    private final String url = "jdbc:mysql://localhost:53306/full_house_badger";
+    private final String url = "jdbc:mysql://db2:3306/full_house_badger";
     private final String databaseUsername = "root";
     private final String password = "lucky_badger";
     private GameManager gameManager;

@@ -22,5 +22,28 @@ services:
       PMA_PASSWORD: lucky_badger
     ports:
       - "50080:80"
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db2
+    environment:
+      MYSQL_HOST: db2
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: full_house_badger
+      MYSQL_USER: root
+      MYSQL_PASSWORD: lucky_badger
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db2
+    stop_signal: SIGINT
 volumes:
   fullhousedat:

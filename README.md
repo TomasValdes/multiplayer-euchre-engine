@@ -14,13 +14,19 @@ ssh -L 8080:localhost:8080 -L 3000:localhost:3000 username@cs506-team-25.cs.wisc
 * Run the following to startup services
 
 ```bash
-cd ./frontend
-docker build . -t eucrefrontend
-cd ../
-docker compose up
+cd ./database
+docker compose -f db_setup.yml up -d --build
 ```
 
-## How to Use The Frontend
+To make edits to the database while the compose is running, run the following:
+
+```bash
+docker exec -it database-db2-1 mysql -u root -p
+```
+
+If you make edits to the backend API, you must restart the backend container in order for the changes to take effect in the running container.
+
+## How to Use The Frontend Locally without the Compose
 
 ```bash
 cd ./frontend
@@ -28,7 +34,7 @@ npm install
 npm run dev
 ```
 
-## How to Use The Backend
+## How to Use The Backend Locally without the Compose
 
 ```bash
 cd ./backend
