@@ -1,5 +1,6 @@
 package CS506Team25.Card_Engine.apitesting;
 
+import CS506Team25.Card_Engine.GameManager;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -61,13 +62,8 @@ class JoinGameWorkFlowTest {
 			String curPlayer = "player" + i + "_id";
 			assertEquals(0, response.get(curPlayer).asInt());
 		}
+		assertNotNull(GameManager.getLobby(gameID));
 	}
-
-//	@Test
-//	void assertLobbyCreated(){
-//		ObjectNode response = restTemplate.getForObject(localHost + port + "/games/euchre/" + gameID, ObjectNode.class);
-//
-//	}
 
 	private static HttpEntity<String> createHeaders(){
 		HttpHeaders headers = new HttpHeaders();

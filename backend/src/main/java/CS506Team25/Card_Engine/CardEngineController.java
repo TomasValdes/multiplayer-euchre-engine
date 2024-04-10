@@ -173,6 +173,7 @@ public class CardEngineController {
             insertStatement.setInt(2, Integer.parseInt(id));
             int rowsInserted = insertStatement.executeUpdate();
             if (rowsInserted > 0) {
+                //TODO: add player to lobby and get them connected to websocket
                 return "Successfully assigned to seat " + seatNumber;
             } else {
                 return "Could not assign seat";
@@ -356,6 +357,8 @@ public class CardEngineController {
     private void getLiveLobbies(){
         ObjectNode json = getOpenGames();
         Consumer<JsonNode> data = (JsonNode node) -> GameManager.putLobby(node.get("game_id").asInt());
-        json.forEach(data);
+        if (data != null){
+            json.forEach(data);
+        }
     }
 }
