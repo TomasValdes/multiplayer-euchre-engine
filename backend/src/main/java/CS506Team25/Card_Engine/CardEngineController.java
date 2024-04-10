@@ -127,7 +127,7 @@ public class CardEngineController {
     @PostMapping("games/euchre/create-game")
     public String createGame(@RequestParam String gameName, @RequestParam(required = false) String gamePassword) {
         try (Connection connection = DriverManager.getConnection(url, databaseUsername, password);
-             PreparedStatement insertStatement = connection.prepareStatement("INSERT INTO euchre_game VALUES (DEFAULT, ?, ?, ?, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT , DEFAULT )")) {
+             PreparedStatement insertStatement = connection.prepareStatement("INSERT INTO euchre_game VALUES (DEFAULT, ?, ?, ?, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT , DEFAULT )", Statement.RETURN_GENERATED_KEYS)) {
 
             insertStatement.setString(1, gameName);
             if (gamePassword != null){
@@ -231,26 +231,48 @@ public class CardEngineController {
             statement.setInt(1, Integer.parseInt(id));
             try (ResultSet resultSet = statement.executeQuery()) {
                 resultSet.next();
-                json.put("game_id", resultSet.getInt(1));
-                json.put("game_name", resultSet.getString(2));
-                json.put("player1_id", resultSet.getInt(3));
-                json.put("player2_id", resultSet.getInt(4));
-                json.put("player3_id", resultSet.getInt(5));
-                json.put("player4_id", resultSet.getInt(6));
-                json.set("player1_name", userIDToUsername(resultSet.getInt(3)));
-                json.set("player2_name", userIDToUsername(resultSet.getInt(4)));
-                json.set("player3_name", userIDToUsername(resultSet.getInt(5)));
-                json.set("player4_name", userIDToUsername(resultSet.getInt(6)));
-                json.put("game_status", resultSet.getString(7));
-                json.put("winner_1", resultSet.getInt(8));
-                json.put("winner_2", resultSet.getInt(9));
-                json.put("creation_date", String.valueOf(resultSet.getDate(10)));
+                json.put("game_id", resultSet.getInt("game_id"));
+                json.put("game_name", resultSet.getString("game_name"));
+                json.put("player1_id", resultSet.getInt("player1_id"));
+                json.put("player2_id", resultSet.getInt("player2_id"));
+                json.put("player3_id", resultSet.getInt("player3_id"));
+                json.put("player4_id", resultSet.getInt("player4_id"));
+                json.set("player1_name", userIDToUsername(resultSet.getInt("player1_id")));
+                json.set("player2_name", userIDToUsername(resultSet.getInt("player2_id")));
+                json.set("player3_name", userIDToUsername(resultSet.getInt("player3_id")));
+                json.set("player4_name", userIDToUsername(resultSet.getInt("player4_id")));
+                json.put("game_status", resultSet.getString("game_status"));
+                json.put("winner_1", resultSet.getInt("winner_1"));
+                json.put("winner_2", resultSet.getInt("winner_2"));
+                json.put("creation_date", String.valueOf(resultSet.getDate("creation_date")));
                 return json;
             }
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Get information about a game
+     * @param id game's id
+     * @return id of deleted game if game is successfully deleted. -1 if game could not be deleted
+     */
+    @DeleteMapping("/games/euchre/{id}")
+    public int deleteGame(@PathVariable String id){
+        try (Connection connection = DriverManager.getConnection(url, databaseUsername, password);
+             PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM euchre_game WHERE game_id = ?")) {
+
+            deleteStatement.setInt(1, Integer.parseInt(id));
+            int deletedRows = deleteStatement.executeUpdate();
+            if (deletedRows > 0){
+                return Integer.parseInt(id);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+        return -1;
     }
 
     /**
@@ -287,10 +309,10 @@ public class CardEngineController {
     @DeleteMapping("/player/{id}")
     public int deletePlayer(@PathVariable String id){
         try (Connection connection = DriverManager.getConnection(url, databaseUsername, password);
-             PreparedStatement DeleteStatement = connection.prepareStatement("DELETE FROM users WHERE user_id = ?")) {
+             PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM users WHERE user_id = ?")) {
 
-            DeleteStatement.setInt(1, Integer.parseInt(id));
-            int deletedRows = DeleteStatement.executeUpdate();
+            deleteStatement.setInt(1, Integer.parseInt(id));
+            int deletedRows = deleteStatement.executeUpdate();
             if (deletedRows > 0){
                 return Integer.parseInt(id);
             }
