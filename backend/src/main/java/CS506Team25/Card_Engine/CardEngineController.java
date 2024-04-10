@@ -82,7 +82,7 @@ public class CardEngineController {
      * 
      * @param username                                  Username attempting to be registered
      * @return "User already exists"                    Desired username already in use
-     * @return "User successfully registered"           Username registered and added to database
+     *         "User successfully registered"           Username registered and added to database
      */
     @PostMapping("/register")
     public String register(@RequestParam String username) {
@@ -197,6 +197,9 @@ public class CardEngineController {
             while (resultSet.next()) {
                 ObjectNode game = objectMapper.createObjectNode();
                 int players = 0;
+                /*
+                 *  Count number of player in lobby
+                 */
                 for (int x = 3; x < 7; x++){
                     if (resultSet.getInt(x) != 0){
                         players++;
@@ -296,6 +299,28 @@ public class CardEngineController {
             return -1;
         }
         return -1;
+    }
+
+    @GetMapping("/player")
+    public ObjectNode getAllUsers(){
+        try (Connection connection = DriverManager.getConnection(url, databaseUsername, password);
+             PreparedStatement statement = connection.prepareStatement("SELECT user_id, user_name, date_joined FROM users")) {
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode json = objectMapper.createObjectNode();
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                ObjectNode user = objectMapper.createObjectNode();
+
+                user.put("user_id", resultSet.getInt(1));
+                user.put("date_joined", String.valueOf(resultSet.getDate(3)));
+                json.set(resultSet.getString(2), user);
+            }
+            return json;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private JsonNode userIDToUsername(int userID){
