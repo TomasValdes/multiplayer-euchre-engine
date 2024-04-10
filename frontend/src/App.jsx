@@ -74,7 +74,7 @@ function App() {
 			.then(response => response.text())
 				.then(data => {
 					console.log(data); // Used in development to debug
-					if (data === 'Logged in') {
+					if (!!data) {
 						setUsername(username);
 						setLoggedIn(true);
 					} 
