@@ -332,10 +332,86 @@ public class CardEngineController {
         return -1;
     }
 
+    /**
+     * Used to delete a player's stored statistics in all games
+     *
+     * @param playerID the id of the player who wishes to reset their statistics
+     * @return true if player stats successfully deleted, false otherwise
+     */
+    @DeleteMapping("player/{playerID}/stats")
+    public Boolean resetPlayersStats(@PathVariable String playerID) {
+        try (Connection connection = ConnectToDataBase.connect();
+             PreparedStatement statement = connection.prepareStatement("UPDATE euchre_game set winner_1 = 0 WHERE game_status = 'done' AND winner_1 = ?")) {
+            statement.setInt(1, Integer.parseInt(playerID));
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        try (Connection connection = ConnectToDataBase.connect();
+             PreparedStatement statement = connection.prepareStatement("UPDATE euchre_game set winner_2 = 0 WHERE game_status = 'done' AND winner_2 = ?")) {
+            statement.setInt(1, Integer.parseInt(playerID));
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Retrieves the statistics for a player identified by the provided playerID.
+     * The returned JSON contains information about the games in which the player participated.
+     * {gameID}:
+     *   - "player1": The username of player 1 in the game.
+     *   - "player2": The username of player 2 in the game.
+     *   - "player3": The username of player 3 in the game.
+     *   - "player4": The username of player 4 in the game.
+     *   - "date": The date of the game.
+     *   - "winner1": The username of the first winner in the game, or "bot" if it's a bot player.
+     *   - "winner2": The username of the second winner in the game, or "bot" if it's a bot player.
+     *
+     * @param playerID The ID of the player for whom statistics are to be retrieved.
+     * @return An ObjectNode containing the player's statistics in JSON format. null otherwise.
+     */
+    @GetMapping("player/{playerID}/stats")
+    public ObjectNode getPlayerStats(@PathVariable String playerID) {
+        try (Connection connection = ConnectToDataBase.connect();
+             PreparedStatement statement = connection.prepareStatement("SELECT game_id, player1_id, player2_id, player3_id, player4_id, creation_date, winner_1, winner_2 FROM euchre_game WHERE game_status = 'done' AND (player1_id = ? OR player2_id = ? OR player3_id = ? OR player4_id = ?)")) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode json = objectMapper.createObjectNode();
+            statement.setInt(1, Integer.parseInt(playerID));
+            statement.setInt(2, Integer.parseInt(playerID));
+            statement.setInt(3, Integer.parseInt(playerID));
+            statement.setInt(4, Integer.parseInt(playerID));
+
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                ObjectNode game = objectMapper.createObjectNode();
+                game.put("player1", userIDToUsername(resultSet.getInt(2)));
+                game.put("player2", userIDToUsername(resultSet.getInt(3)));
+                game.put("player3", userIDToUsername(resultSet.getInt(4)));
+                game.put("player4", userIDToUsername(resultSet.getInt(5)));
+                game.put("date", String.valueOf(resultSet.getDate(6)));
+                int winner1 = resultSet.getInt(7);
+                int winner2 = resultSet.getInt(8);
+                game.put("winner1", winner1 == 0? "bot" : userIDToUsername(winner1));
+                game.put("winner2", winner1 == 0? "bot" : userIDToUsername(winner2));
+
+
+                json.set(String.valueOf(resultSet.getInt(1)), game);
+            }
+            return json;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
    /**
      * Changing username given the userid
-     * @param userid 	id of user
-     * @param username  new username
+     * @param playerID 	id of user
+     * @param newUserName  new username
      * @return string successful or failed.
      */
     @PostMapping("/player/{playerID}/change-username")
