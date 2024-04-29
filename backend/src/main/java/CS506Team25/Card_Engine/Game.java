@@ -378,7 +378,7 @@ public class Game extends Thread{
      */
     public void playCard(Player player) {
         currentPlayer = player;
-        if (player == players[(Arrays.asList(players).indexOf(lonerPlayer) + 2) % 4]) {
+        if (lonerPlayer != null && player == players[(Arrays.asList(players).indexOf(lonerPlayer) + 2) % 4]) {
             // This player's partner is going alone, so the player cannot play any cards
             // this hand
             currentTrick.add(null);
