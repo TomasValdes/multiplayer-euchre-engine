@@ -309,13 +309,11 @@ public class Game extends Thread{
             new String[] {"Yes", "No"});
         if (response.equals("Yes")) {
             lonerPlayer = player;
+            messageToOutput
+                    .append("Player ")
+                    .append(players[(Arrays.asList(players).indexOf(currentPlayer) + 2) % 4].username)
+                    .append(", your partner has chosen to go alone, you cannot play this hand\n");
         }
-        
-        // This will probably need some way to be handled visually on the frontend
-        messageToOutput
-            .append("Player ")
-                .append(players[(Arrays.asList(players).indexOf(currentPlayer) + 2) % 4].username)
-                .append(", your partner has chosen to go alone, you cannot play this hand\n");
     }
 
     /**
